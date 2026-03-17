@@ -3,3 +3,4 @@ pandas
 plotly
 numpy
 openpyxl
+st-gsheets-connection==0.0.3
