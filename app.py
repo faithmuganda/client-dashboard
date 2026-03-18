@@ -150,4 +150,36 @@ try:
         st.markdown('</div>', unsafe_allow_html=True)
 
     with r2c2:
-        st.markdown(f
+        st.markdown(f'''<div class="metric-card" style="height:310px; text-align:left;">
+            <p class="chart-heading">Customer Metrics</p>
+            <p>👤 Total Customers: <b style="float:right;">{unique_cust}</b></p>
+            <hr>
+            <p>🔄 Repeat Rate: <b style="float:right;">{repeat_rate:.1f}%</b></p>
+            <p>💰 Avg Value: <b style="float:right;">KSh {avg_val:,.0f}</b></p>
+        </div>''', unsafe_allow_html=True)
+
+    with r2c3:
+        if "Stock" in df.columns:
+            low_stock_df = df.groupby("Product")["Stock"].last().sort_values().head(3)
+        else:
+            low_stock_df = df.groupby("Product")["Units_Sold"].sum().sort_values().head(3)
+        stock_items_html = "".join([f"<li>{prod}: <b>{int(val)} left</b></li>" for prod, val in low_stock_df.items()])
+        st.markdown(f'''<div class="metric-card" style="height:310px; text-align:left;">
+            <p class="chart-heading">Low Stock Alert</p>
+            <ul>{stock_items_html}</ul>
+        </div>''', unsafe_allow_html=True)
+
+    with r2c4:
+        st.markdown(f'<div class="chart-container"><p class="chart-heading">Monthly Trend</p>', unsafe_allow_html=True)
+        df['Month'] = df['Date'].dt.strftime('%b')
+        monthly = df.groupby('Month').agg({"Revenue":"sum", "Profit":"sum"}).reset_index()
+        fig_mon = go.Figure()
+        fig_mon.add_trace(go.Bar(x=monthly['Month'], y=monthly['Revenue'], marker_color='#1b5e20'))
+        fig_mon.update_layout(height=200, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                             xaxis=axis_style, yaxis=axis_style, showlegend=False)
+        st.plotly_chart(fig_mon, use_container_width=True)
+        st.download_button("📥 Monthly Data", monthly.to_csv(index=False), "monthly_trend.csv", key="dl_monthly")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+except Exception as e:
+    st.error(f"Something went wrong: {e}")
