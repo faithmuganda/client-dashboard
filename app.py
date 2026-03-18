@@ -37,7 +37,6 @@ st.markdown(f"""
     .metric-value {{ color: #000000 !important; font-size: 18px; font-weight: bold; }}
     .chart-heading {{ color: #000000 !important; font-weight: bold; text-align: center; margin-bottom: 5px; font-family: serif; font-size: 18px; }}
     
-    /* Small styling for the chart download buttons */
     .stDownloadButton button {{
         padding: 0.2rem 0.5rem !important;
         font-size: 12px !important;
@@ -93,7 +92,10 @@ try:
 
     st.write("<br>", unsafe_allow_html=True)
 
-    # --- ROW 1: CHARTS WITH INDIVIDUAL DOWNLOADS ---
+    # Global Axis Style for Black Labels
+    axis_style = dict(showgrid=True, gridcolor='#eeeeee', tickfont=dict(color='black'), titlefont=dict(color='black'))
+
+    # --- ROW 1: CHARTS ---
     r1c1, r1c2, r1c3 = st.columns([1.5, 1, 1.5])
 
     with r1c1:
@@ -102,37 +104,41 @@ try:
         fig_ov = go.Figure()
         fig_ov.add_trace(go.Scatter(x=daily['Date'], y=daily['Revenue'], name='Sales', line=dict(color='#2e7d32', width=3), mode='lines+markers'))
         fig_ov.add_trace(go.Scatter(x=daily['Date'], y=daily['Profit'], name='Profit', line=dict(color='#ef6c00', width=3), mode='lines+markers'))
-        fig_ov.update_layout(height=230, margin=dict(l=20,r=20,t=10,b=20), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='black'), legend=dict(orientation="h", y=-0.2))
+        fig_ov.update_layout(height=230, margin=dict(l=20,r=20,t=10,b=20), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                             xaxis=axis_style, yaxis=axis_style, legend=dict(font=dict(color="black"), orientation="h", y=-0.2))
         st.plotly_chart(fig_ov, use_container_width=True)
-        st.download_button("📥 Sales Data", daily.to_csv(index=False), "daily_sales.csv", "text/csv", key="dl_daily")
+        st.download_button("📥 Sales Data", daily.to_csv(index=False), "daily_sales.csv", key="dl_daily")
         st.markdown('</div>', unsafe_allow_html=True)
 
     with r1c2:
         st.markdown(f'<div class="chart-container"><p class="chart-heading">Top Selling Products</p>', unsafe_allow_html=True)
         top_p = df.groupby("Product")["Units_Sold"].sum().sort_values(ascending=False).reset_index()
         fig_p = px.bar(top_p.head(4), x="Units_Sold", y="Product", orientation='h', color_discrete_sequence=['#2e7d32'], text_auto=True)
-        fig_p.update_layout(height=230, margin=dict(l=0,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='black'), xaxis_visible=False, yaxis_title=None)
+        fig_p.update_layout(height=230, margin=dict(l=0,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                            xaxis=dict(visible=False), yaxis=axis_style)
         st.plotly_chart(fig_p, use_container_width=True)
-        st.download_button("📥 Product Data", top_p.to_csv(index=False), "top_products.csv", "text/csv", key="dl_prod")
+        st.download_button("📥 Product Data", top_p.to_csv(index=False), "top_products.csv", key="dl_prod")
         st.markdown('</div>', unsafe_allow_html=True)
 
     with r1c3:
         st.markdown(f'<div class="chart-container"><p class="chart-heading">Profit Margin by Product</p>', unsafe_allow_html=True)
         margin_data = df.groupby("Product").agg({"Profit":"sum"}).reset_index().sort_values("Profit", ascending=False)
         fig_m = px.bar(margin_data.head(5), x="Product", y="Profit", color="Product", color_discrete_sequence=['#2e7d32', '#ff9800'], text_auto='.0f')
-        fig_m.update_layout(height=230, margin=dict(l=10,r=10,t=10,b=10), showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font=dict(color='black'), yaxis_visible=False, xaxis_title=None)
+        fig_m.update_layout(height=230, margin=dict(l=10,r=10,t=10,b=10), showlegend=False, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                            xaxis=axis_style, yaxis=dict(visible=False))
         st.plotly_chart(fig_m, use_container_width=True)
-        st.download_button("📥 Margin Data", margin_data.to_csv(index=False), "profit_margins.csv", "text/csv", key="dl_margin")
+        st.download_button("📥 Margin Data", margin_data.to_csv(index=False), "profit_margins.csv", key="dl_margin")
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- ROW 2: MORE CHARTS ---
+    # --- ROW 2 ---
     r2c1, r2c2, r2c3, r2c4 = st.columns([1.5, 1, 1, 1.5])
 
     with r2c1:
         st.markdown(f'<div class="chart-container"><p class="chart-heading">Activity Heatmap</p>', unsafe_allow_html=True)
         z_data = np.random.randint(1, 10, size=(6, 10)) 
         fig_h = px.imshow(z_data, color_continuous_scale='YlGn') 
-        fig_h.update_layout(height=200, margin=dict(l=10,r=10,t=10,b=10), coloraxis_showscale=False, paper_bgcolor='rgba(0,0,0,0)')
+        fig_h.update_layout(height=200, margin=dict(l=10,r=10,t=10,b=10), coloraxis_showscale=False, paper_bgcolor='rgba(0,0,0,0)',
+                            xaxis=axis_style, yaxis=axis_style)
         st.plotly_chart(fig_h, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -150,9 +156,7 @@ try:
             low_stock_df = df.groupby("Product")["Stock"].last().sort_values().head(3)
         else:
             low_stock_df = df.groupby("Product")["Units_Sold"].sum().sort_values().head(3)
-        
         stock_items_html = "".join([f"<li>{prod}: <b>{int(val)} left</b></li>" for prod, val in low_stock_df.items()])
-
         st.markdown(f'''<div class="metric-card" style="height:310px; text-align:left;">
             <p class="chart-heading">Low Stock Alert</p>
             <ul>{stock_items_html}</ul>
@@ -164,10 +168,11 @@ try:
         monthly = df.groupby('Month').agg({"Revenue":"sum", "Profit":"sum"}).reset_index()
         fig_mon = go.Figure()
         fig_mon.add_trace(go.Bar(x=monthly['Month'], y=monthly['Revenue'], marker_color='#1b5e20'))
-        fig_mon.update_layout(height=200, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', showlegend=False)
+        fig_mon.update_layout(height=200, margin=dict(l=10,r=10,t=10,b=10), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', 
+                             xaxis=axis_style, yaxis=axis_style, showlegend=False)
         st.plotly_chart(fig_mon, use_container_width=True)
-        st.download_button("📥 Monthly Data", monthly.to_csv(index=False), "monthly_trend.csv", "text/csv", key="dl_monthly")
+        st.download_button("📥 Monthly Data", monthly.to_csv(index=False), "monthly_trend.csv", key="dl_monthly")
         st.markdown('</div>', unsafe_allow_html=True)
 
 except Exception as e:
-    st.error(f"Error connecting to data: {e}")
+    st.error(f"Error: {e}")
