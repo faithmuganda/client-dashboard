@@ -4,19 +4,25 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 from streamlit_gsheets import GSheetsConnection
-hide_style = """
+hide_attribution = """
     <style>
-    /* This hides the hamburger menu */
-    #MainMenu {visibility: hidden;}
+    /* Hides the "Created by" and other info in the sidebar footer */
+    div[data-testid="stSidebarNav"] + div {
+        display: none;
+    }
+
+    /* Specifically targets the 'Made with Streamlit' and user info in the menu */
+    footer {
+        visibility: hidden;
+    }
     
-    /* This hides the footer that says "Made with Streamlit" */
-    footer {visibility: hidden;}
-    
-    /* This hides the header decoration */
-    header {visibility: hidden;}
+    /* Optional: Hide the header bar at the top for a cleaner look */
+    header {
+        visibility: hidden;
+    }
     </style>
     """
-st.markdown(hide_style, unsafe_allow_html=True)
+st.markdown(hide_attribution, unsafe_allow_html=True)
 # --- PAGE CONFIG ---
 st.set_page_config(layout="wide", page_title="Herbs & Spices Sales Dashboard")
 
