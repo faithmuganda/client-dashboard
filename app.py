@@ -4,7 +4,19 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 from streamlit_gsheets import GSheetsConnection
-
+hide_style = """
+    <style>
+    /* This hides the hamburger menu */
+    #MainMenu {visibility: hidden;}
+    
+    /* This hides the footer that says "Made with Streamlit" */
+    footer {visibility: hidden;}
+    
+    /* This hides the header decoration */
+    header {visibility: hidden;}
+    </style>
+    """
+st.markdown(hide_style, unsafe_allow_html=True)
 # --- PAGE CONFIG ---
 st.set_page_config(layout="wide", page_title="Herbs & Spices Sales Dashboard")
 
